@@ -17,9 +17,13 @@ Follow these steps to run the application locally:
  
 1. Clone the repository: git clone https://github.com/pratibh13/LRU-Cache.git
  
-2) Navigate to the project directory: cd lru-cache-web-app
+2) Navigate to the project directory: cd LRU-Cache
 3) Build and run the application using Docker Compose: docker-compose up --build
 Once the containers are up and running, you can access the frontend app at http://localhost:3000 and the backend API at http://localhost:8080.
+                                       OR
+   1) Split the terminal
+   2) Navigate to backend and run go run main.go // these will start your backend server
+   3) On second terminal Navigate to: frontend/lru-cache-app  then run npm start // these will start your client server 
  
 ### USAGE
 Use the frontend application to interact with the LRU cache system:
