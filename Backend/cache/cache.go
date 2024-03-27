@@ -55,13 +55,12 @@ func (cache *LRUCache) Set(key string, value interface{}) {
 	cache.mutex.Lock()
 	defer cache.mutex.Unlock()
 
-	// Check if key exists
-	if _, found := cache.Items[key]; !found && len(cache.Items) >= cache.Size {
-		// Remove least recently used item if cache is full
-		cache.removeLRU()
+	// Check if the cache is full
+	if len(cache.Items) >= cache.Size {
+		cache.removeLRU("")
 	}
 
-	expiration := time.Now().Add(10 * time.Second)
+	expiration := time.Now().Add(20 * time.Second)
 
 	// Add or update the item
 	cache.Items[key] = &Cache{
@@ -90,7 +89,7 @@ func (cache *LRUCache) updateOrder(key string) {
 }
 
 // removeLRU removes the least recently used item from the cache
-func (cache *LRUCache) removeLRU() {
+func (cache *LRUCache) removeLRU(key string) {
 	if len(cache.Order) == 0 {
 		return
 	}
@@ -98,4 +97,21 @@ func (cache *LRUCache) removeLRU() {
 	lruKey := cache.Order[len(cache.Order)-1]
 	delete(cache.Items, lruKey)
 	cache.Order = cache.Order[:len(cache.Order)-1]
+}
+
+func (cache *LRUCache) EvictExpired(interval time.Duration) {
+	ticker := time.NewTicker(interval)
+	defer ticker.Stop()
+
+	for {
+		<-ticker.C
+
+		cache.mutex.Lock()
+		for key, item := range cache.Items {
+			if time.Now().After(item.Expiration) {
+				cache.removeLRU(key)
+			}
+		}
+		cache.mutex.Unlock()
+	}
 }

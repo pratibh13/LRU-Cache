@@ -5,6 +5,7 @@ import (
 	"LRU-Cache/handlers"
 	"log"
 	"net/http"
+	"time"
 
 	"github.com/rs/cors"
 )
@@ -12,6 +13,9 @@ import (
 func main() {
 	size := 1024
 	c := cache.NewLRUCache(size)
+
+	//Start the periodic eviction of expired keys
+	go c.EvictExpired(1 * time.Minute)
 
 	// Initialize CORS middleware with custom options
 	corsHandler := cors.New(cors.Options{
