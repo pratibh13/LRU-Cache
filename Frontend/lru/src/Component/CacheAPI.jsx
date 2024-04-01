@@ -5,6 +5,7 @@ const CacheAPI = () => {
     const [keyInput, setKeyInput] = useState('');
     const [valueInput, setValueInput] = useState('');
     const [response, setResponse] = useState('');
+    const [expirationTimeInput, setExpirationTimeInput] = useState('');
  
     const handleGetKey = async () => {
         try {
@@ -20,7 +21,10 @@ const res = await axios.get(`http://localhost:8080/get?key=${keyInput}`);
  
     const handleSetKey = async () => {
         try {
-await axios.post(`http://localhost:8080/set`, { key: keyInput, value: valueInput });
+            const expirationSeconds=parseInt(expirationTimeInput)
+            const expiration=expirationSeconds*1000
+            console.log({ key: keyInput, value: valueInput,expirationTime: expiration })
+await axios.post(`http://localhost:8080/set`, { key: keyInput, value: valueInput,expirationTime: expiration });
             setResponse(`Key ${keyInput} set successfully!`);
         } catch (error) {
             console.error(error);
@@ -39,6 +43,11 @@ await axios.post(`http://localhost:8080/set`, { key: keyInput, value: valueInput
                 <label>Value:</label>
                 <input type="text" value={valueInput} onChange={(e) => setValueInput(e.target.value)} />
                 <button onClick={handleSetKey}>Set Key</button>
+            </div>
+            <div>
+                <label>Expiration:</label>
+                <input type="number" value={expirationTimeInput} onChange={(e) => setExpirationTimeInput(e.target.value)} />
+                
             </div>
             {response && <p>{response}</p>}
         </div>

@@ -1,6 +1,7 @@
 package cache
 
 import (
+	"fmt"
 	"log"
 	"sync"
 	"time"
@@ -51,7 +52,7 @@ func (cache *LRUCache) Get(key string) (interface{}, bool) {
 }
 
 // Set adds or updates the value associated with the given key in the cache
-func (cache *LRUCache) Set(key string, value interface{}) {
+func (cache *LRUCache) Set(key string, value interface{}, expiration time.Time) {
 	cache.mutex.Lock()
 	defer cache.mutex.Unlock()
 
@@ -60,7 +61,7 @@ func (cache *LRUCache) Set(key string, value interface{}) {
 		cache.removeLRU("")
 	}
 
-	expiration := time.Now().Add(20 * time.Second)
+	// expirationTime := time.Now().Add(expiration * time.Second)
 
 	// Add or update the item
 	cache.Items[key] = &Cache{
@@ -69,6 +70,7 @@ func (cache *LRUCache) Set(key string, value interface{}) {
 		Expiration: expiration,
 	}
 
+	fmt.Printf("Cache %v", cache.Items[key])
 	// Update the order
 	cache.updateOrder(key)
 }

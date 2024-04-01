@@ -1,20 +1,21 @@
 package handlers
 
 import (
+	"LRU-Cache/cache"
+	"LRU-Cache/handlers"
 	"bytes"
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
 	"testing"
-
-	"LRU-Cache/cache"
-	"LRU-Cache/handlers"
+	"time"
 )
 
 func TestGetHandler(t *testing.T) {
 	// Initialize cache
 	c := cache.NewLRUCache(10)
-	c.Set("testKey", "testValue")
+	expirationTime := time.Now().Add(10 * time.Second)
+	c.Set("testKey", "testValue", expirationTime)
 
 	// Create a request
 	req, err := http.NewRequest("GET", "/get?key=testKey", nil)
@@ -42,11 +43,13 @@ func TestGetHandler(t *testing.T) {
 func TestSetHandler(t *testing.T) {
 	// Initialize cache
 	c := cache.NewLRUCache(10)
+	expirationTime := time.Now().Add(10 * time.Second)
 
 	// Create a request body
 	requestBody := map[string]interface{}{
-		"key":   "testKey",
-		"value": "testValue",
+		"key":            "testKey",
+		"value":          "testValue",
+		"expirationTime": expirationTime,
 	}
 	body, _ := json.Marshal(requestBody)
 
@@ -82,5 +85,28 @@ func TestSetHandler(t *testing.T) {
 	if value != "testValue" {
 		t.Errorf("cache value is incorrect: got %v want %v",
 			value, "testValue")
+	}
+}
+
+func BenchmarkSetHandler(b *testing.B) {
+	c := cache.NewLRUCache(10)
+	expirationTime := time.Now().Add(10 * time.Second)
+	for i := 0; i < b.N; i++ {
+		requestBody := map[string]interface{}{
+			"key":        "testKey",
+			"value":      "testValue",
+			"expiration": expirationTime, // Expiration time in seconds from frontend
+		}
+
+		body, _ := json.Marshal(requestBody)
+
+		req, _ := http.NewRequest("POST", "/set", bytes.NewBuffer(body))
+		req.Header.Set("Content-Type", "application/json")
+
+		rr := httptest.NewRecorder()
+
+		handler := http.HandlerFunc(handlers.SetHandler(c))
+
+		handler.ServeHTTP(rr, req)
 	}
 }

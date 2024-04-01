@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"time"
 
 	"LRU-Cache/cache"
 )
@@ -32,18 +33,21 @@ func SetHandler(cache *cache.LRUCache) http.HandlerFunc {
 		// enableCors(&w)
 		fmt.Println("Set method")
 		var data struct {
-			Key   string      `json:"key"`
-			Value interface{} `json:"value"`
+			Key        string      `json:"key"`
+			Value      interface{} `json:"value"`
+			Expiration time.Time   `json:"expirationTime"`
 		}
 		if err := json.NewDecoder(r.Body).Decode(&data); err != nil {
 			http.Error(w, "Invalid request body", http.StatusBadRequest)
 			return
 		}
-		cache.Set(data.Key, data.Value)
+
+		cache.Set(data.Key, data.Value, data.Expiration)
 		// Return the data in the response
 		jsonResponse := map[string]interface{}{
-			"key":   data.Key,
-			"value": data.Value,
+			"key":            data.Key,
+			"value":          data.Value,
+			"expirationTime": data.Expiration,
 		}
 		w.Header().Set("Content-Type", "application/json")
 		json.NewEncoder(w).Encode(jsonResponse)

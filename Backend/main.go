@@ -12,6 +12,7 @@ import (
 
 func main() {
 	size := 1024
+	// time :=5
 	c := cache.NewLRUCache(size)
 
 	//Start the periodic eviction of expired keys
